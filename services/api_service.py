@@ -63,7 +63,7 @@ class S3Service:
             S3 = await self._get_s3_client()
             response = await S3.get_object(Bucket=self.bucket_name, Key=f'{self.images_folder}/{key}')
             image_data = await response['Body'].read()
-
+            # 
             nparr = np.frombuffer(image_data, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 

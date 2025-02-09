@@ -173,8 +173,7 @@ class SQSService:
         except Exception as e:
             await metrics_tracker.update('errors', {'general': 1})
             await metrics_tracker.update('Alert_in_action', -1)
-            self.logger.error(f"❌ Error processing Alert: {
-                              Alert.get('MessageId', 'Unknown ID')}", exc_info=True)
+            self.logger.error(f"❌ Error processing Alert: {Alert.get('MessageId', 'Unknown ID')}", exc_info=True)
             await self.delete_Alert(Alert['ReceiptHandle'])
 
     async def continuous_transfer(self, poll_interval: int = 0):

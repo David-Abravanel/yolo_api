@@ -330,8 +330,7 @@ class MaskService:
         B, F, S, L = shape
         B = max(1, (width // 2) - ((F + S + L) // 2) - 10)
 
-        headers = f"{
-            ' ' * B}| {'Class Name':^{F}}|{'Confidence':^{S}}|{'bbox':^{L}}|"
+        headers = f"{' ' * B}| {'Class Name':^{F}}|{'Confidence':^{S}}|{'bbox':^{L}}|"
         divider = f"{' ' * B}•-{'-' * F}•{'-' * S}•{'-' * L}•"
 
         print("\n\n" + divider)
@@ -346,8 +345,7 @@ class MaskService:
             print(f"{' ' * B}| {f'image {i}':<{F}}|{' ' * S}|{' ' * L}|")
 
             for j, det in enumerate(image_detections, 1):
-                print(f"{' ' * B}| {f'   {j}. {object_detected[det.class_name]} {
-                      det.class_name}':<{F-1}}|{f'{det.confidence}':^{S}}|{f'{det.bbox}':^{L}}|")
+                print(f"{' ' * B}| {f'   {j}. {object_detected[det.class_name]} {det.class_name}':<{F-1}}|{f'{det.confidence}':^{S}}|{f'{det.bbox}':^{L}}|")
 
             print(divider)
 

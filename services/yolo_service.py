@@ -41,7 +41,7 @@ class YoloService:
                 print("Loading YOLO model...")
                 try:
                     self.model = torch.hub.load(
-                        'ultralytics/yolov5', 'yolov5m')
+                        'ultralytics/yolov5', 'yolov5s')
                     # self.model = YOLO("yolov8s.pt")
                     self.model.to(self.device)
                     self.model.eval()
