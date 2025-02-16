@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  yolo_service:
+    image: yolo  # שם ה-Image שנבנה פעם אחת
+    container_name: yolo_container
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - "C:/Users/daivi/.ssh:/root/.ssh"  # גישה למפתחות SSH אם הריפו פרטי
+    environment:
+      - GIT_SSH_COMMAND=ssh -o StrictHostKeyChecking=no

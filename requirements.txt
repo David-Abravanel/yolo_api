@@ -1,8 +1,8 @@
-aioboto3
-aiohttp
-fastapi
+aioboto3==13.4.0
+aiohttp==3.11.11
+fastapi==0.115.8
 numpy
-opencv-python
-ultralytics
+opencv-python-headless
+# ultralytics
 uvicorn
 gunicorn
