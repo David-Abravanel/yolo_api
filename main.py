@@ -263,6 +263,7 @@ import os
 # from typing import Dict, Optional, Union
 import uvicorn
 import asyncio
+from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from contextlib import asynccontextmanager
 # from fastapi import FastAPI, HTTPException, Query
@@ -314,9 +315,9 @@ async def get_metric(request: Request):
     return {"data": metrics, "status": 'healthy'}
 
 
-@app.get("/health-clients")
-def get_client_metric():
-    return {"data": metrics_tracker.clients_track, "status": 'healthy'}
+@app.get("/clients")
+def get_client_metric(ip: Optional[str] = None):
+    return {"data": metrics_tracker.get_client_data(client_ip=ip), "status": 'healthy'}
 
 
 if __name__ == "__main__":

@@ -245,5 +245,19 @@ class MetricsTracker:
             '📉 error rate': calculate_rate(total_errors, total_send_attempts),
         }
 
+    def get_client_data(self, client_ip: Optional[str] = None):
+        if client_ip:
+            # Find the full key that contains the given IP
+            matched_key = next((key for key in self.clients_track if client_ip in key), None)
+
+            if matched_key:
+                # Sort and return the data for the found key
+                return {matched_key: dict(sorted(self.clients_track[matched_key].items()))}
+            else:
+                return "No data available"
+
+        # Returns all data with each client's cameras sorted by ID
+        return {ip: dict(sorted(channels.items())) for ip, channels in self.clients_track.items()}
+
 
 metrics_tracker = MetricsTracker()
