@@ -317,7 +317,7 @@ async def get_metric(request: Request):
 
 @app.get("/clients")
 def get_client_metric(ip: Optional[str] = None):
-    return {"data": metrics_tracker.get_client_data(client_ip=ip), "status": 'healthy'}
+    return {"clients": metrics_tracker.get_client_data(client_ip=ip)}
 
 
 if __name__ == "__main__":
