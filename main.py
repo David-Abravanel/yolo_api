@@ -310,18 +310,14 @@ app = FastAPI(title="YOLO Detection Service", lifespan=lifespan)
 
 @app.get("/health")
 async def get_metric(request: Request):
-    # allowed_origins = [
-    #     "https://github.com",
-    #     # f"http://{local_coll}"
-    # ]
-    # origin = request.headers.get("origin")
-
-    # print(f"🔍 Origin: {origin}")
-    # if not origin or origin not in allowed_origins:
-    #     raise HTTPException(status_code=403, detail="CORS blocked")
-
     metrics = metrics_tracker.calculate_metrics()
     return {"data": metrics, "status": 'healthy'}
+
+
+@app.get("/health-clients")
+def get_client_metric():
+    return {"data": metrics_tracker.clients_track, "status": 'healthy'}
+
 
 if __name__ == "__main__":
     uvicorn.run(

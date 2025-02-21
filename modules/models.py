@@ -1,7 +1,8 @@
+from collections import defaultdict
 import json
 import asyncio
 import numpy as np
-from typing import Optional, List
+from typing import Dict, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pydantic import BaseModel, field_validator, model_validator
@@ -130,10 +131,17 @@ class MetricsTracker:
         'get': 0, 'send': 0, 'delete': 0, 'general': 0
     })
 
+    clients_track: Dict[str, Dict[int, int]] = field(
+        default_factory=lambda: defaultdict(lambda: defaultdict(int))
+    )
     processing_times: List[float] = field(default_factory=list)
     camera_to_detection_times: List[float] = field(default_factory=list)
 
     _metrics_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+
+    async def update_client(self, client_ip: str, client_channel: int):
+        async with self._metrics_lock:
+            self.clients_track[client_ip][client_channel] += 1
 
     async def update(self, metric_type: str, value: int = 1):
         async with self._metrics_lock:
