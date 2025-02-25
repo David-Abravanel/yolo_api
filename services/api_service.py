@@ -40,12 +40,12 @@ from typing import Optional
 class S3Service:
     _instance = None
 
-    def __new__(cls, region: str, Bucket: str, Folder: str):
+    def __new__(cls, region: str, source_bucket: str, source_folder: str):
         if not cls._instance:
             cls._instance = super().__new__(cls)
             cls._instance.session = aioboto3.Session(region_name=region)
-            cls.bucket_name = Bucket
-            cls.images_folder = Folder
+            cls.bucket_name = source_bucket
+            cls.images_folder = source_folder
             cls._instance.S3 = None
         return cls._instance
 

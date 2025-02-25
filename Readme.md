@@ -293,3 +293,7 @@ sudo systemctl status yolo_api.service
 ```bash
 sudo journalctl -u yolo_api.service -f
 ```
+
+```bash
+ssh -i C:\project\ILG\yolo_api\keys\ILG-YOLO-KP.pem ubuntu@51.17.47.54
+```

@@ -277,21 +277,33 @@ load_AWS_env(secret_name='ILG-YOLO-SQS')
 
 yolo_service = YoloService()
 
-queue_for_yolo_url = os.getenv('queue_for_yolo_url')
-queue_for_backend_url = os.getenv('queue_for_backend_url')
-bucket_name = os.getenv('bucket_name')
-# local_coll = os.getenv('local_coll')
-images_folder = os.getenv('images_folder')
+# AWS configure
 region = os.getenv('region')
 
-s3Service = S3Service(Bucket=bucket_name, Folder=images_folder, region=region)
+# SQS
+queue_for_yolo_url = os.getenv('queue_for_yolo_url')
+queue_for_backend_url = os.getenv('queue_for_backend_url')
+
+# S3
+source_bucket_name = os.getenv('source_bucket_name')
+source_folder = os.getenv('source_folder')
+# dest_bucket_name = os.getenv('dest_bucket_name')
+# dest_folder = os.getenv('dest_folder')
+
+s3Service = S3Service(
+    region=region,
+    source_bucket=source_bucket_name,
+    # dest_bucket=dest_bucket_name,
+    source_folder=source_folder,
+    # dest_folder=dest_folder,
+)
 
 SqsService = SQSService(
     region=region,
-    data_for_queue_url=queue_for_yolo_url,
-    backend_queue_url=queue_for_backend_url,
     S3Service=s3Service,
     yolo_service=yolo_service,
+    data_for_queue_url=queue_for_yolo_url,
+    backend_queue_url=queue_for_backend_url,
 )
 
 
