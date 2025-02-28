@@ -278,7 +278,7 @@ load_AWS_env(secret_name='ILG-YOLO-SQS')
 yolo_service = YoloService()
 
 # AWS configure
-region = os.getenv('region')
+ilg_aws_region = os.getenv('region')
 
 # SQS
 queue_for_yolo_url = os.getenv('queue_for_yolo_url')
@@ -287,19 +287,19 @@ queue_for_backend_url = os.getenv('queue_for_backend_url')
 # S3
 source_bucket_name = os.getenv('source_bucket_name')
 source_folder = os.getenv('source_folder')
-# dest_bucket_name = os.getenv('dest_bucket_name')
-# dest_folder = os.getenv('dest_folder')
+dest_bucket_name = os.getenv('dest_bucket_name')
+dest_folder = os.getenv('dest_folder')
 
 s3Service = S3Service(
-    region=region,
+    region=ilg_aws_region,
     source_bucket=source_bucket_name,
-    # dest_bucket=dest_bucket_name,
+    dest_bucket=dest_bucket_name,
     source_folder=source_folder,
-    # dest_folder=dest_folder,
+    dest_folder=dest_folder,
 )
 
 SqsService = SQSService(
-    region=region,
+    region=ilg_aws_region,
     S3Service=s3Service,
     yolo_service=yolo_service,
     data_for_queue_url=queue_for_yolo_url,
@@ -309,7 +309,6 @@ SqsService = SQSService(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await s3Service.initialize()
     await yolo_service.initialize()
     task = asyncio.create_task(SqsService.continuous_transfer())
 

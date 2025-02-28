@@ -155,6 +155,10 @@ class SQSService:
                 mask_key = f'{Alert_body.snapshots[0][:-6]}_3.jpg'
                 await self.S3Service.upload_image(key=mask_key, image=color_mask)
                 Alert_body.snapshots.append(mask_key)
+                await asyncio.gather(*[self.S3Service.move_pictures(key=url) for url in Alert_body.snapshots], return_exceptions=True)
+                temp_urls = await asyncio.gather(*[self.S3Service.generate_url(key=url) for url in Alert_body.snapshots], return_exceptions=True)
+                print(temp_urls)
+                Alert_body.temp_urls.extend(temp_urls)
                 detection = AlertsResponse(
                     camera_data=Alert_body.without_camera_data(), detections=detections)
                 MaskService.print_results(detections)
