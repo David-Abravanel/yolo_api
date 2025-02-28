@@ -26,6 +26,13 @@ class S3Service:
             cls._instance.S3 = None
         return cls._instance
 
+    async def initialize(self):
+        self.S3 = await self.session.client(
+            "s3",
+            region_name="il-central-1",
+            endpoint_url="https://s3.il-central-1.amazonaws.com"
+        ).__aenter__()
+
     async def _get_s3_client(self, fresh: bool = False):
         """Ensures the S3 client is initialized with the correct endpoint"""
         if fresh or self.S3 is None:
@@ -61,12 +68,14 @@ class S3Service:
         except Exception as e:
             raise ValueError(f"Unexpected error: {str(e)}")
 
-    async def upload_image(self, key: str, image: np.ndarray) -> bool:
+    async def upload_image(self, key: str, image: np.ndarray, bucket: Optional[str] = None, folder: Optional[str] = None) -> bool:
         try:
             S3 = await self._get_s3_client()
             _, encoded_image = cv2.imencode('.jpg', image)
             image_data = encoded_image.tobytes()
-            await S3.put_object(Bucket=self.temp_bucket, Key=f'{self.temp_snaps_folder}/{key}', Body=image_data, ContentType='image/jpeg')
+            bucket = bucket or self.backend_bucket
+            folder = folder or self.backend_snaps_folder
+            await S3.put_object(Bucket=bucket, Key=f'{folder}/{key}', Body=image_data, ContentType='image/jpeg')
             print("🖼️⬆️ mask color uploaded")
             return True
 
@@ -81,7 +90,7 @@ class S3Service:
         bucket = bucket or self.backend_bucket
         folder = folder or self.backend_snaps_folder
         full_key = f'{folder}/{key}'
-        print(bucket, "/", full_key)
+        # print(bucket, "/", full_key)
         try:
             url = await s3.generate_presigned_url(
                 'get_object',
@@ -103,8 +112,6 @@ class S3Service:
 
         try:
             await S3.copy_object(Bucket=self.backend_bucket, Key=dest_key, CopySource=copy_source)
-            print("🖼️⬆️ move to ", self.backend_bucket,
-                  "/", self.backend_snaps_folder)
             return True
         except Exception as e:
             print(e)

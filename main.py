@@ -309,6 +309,7 @@ SqsService = SQSService(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await s3Service.initialize()
     await yolo_service.initialize()
     task = asyncio.create_task(SqsService.continuous_transfer())
 
