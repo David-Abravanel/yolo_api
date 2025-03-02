@@ -152,12 +152,12 @@ class SQSService:
 
             detection_happened = False
             if detections and any(detections):
-                mask_key = f'{Alert_body.snapshots[0][:-6]}_3.jpg'
-                await self.S3Service.upload_image(key=mask_key, image=color_mask, bucket=self.S3Service.backend_bucket, folder=self.S3Service.backend_snaps_folder)
+                # mask_key = f'{Alert_body.snapshots[0][:-6]}_3.jpg'
+                # await self.S3Service.upload_image(key=mask_key, image=color_mask, bucket=self.S3Service.backend_bucket, folder=self.S3Service.backend_snaps_folder)
                 await asyncio.gather(*[self.S3Service.move_pictures(key=url) for url in Alert_body.snapshots], return_exceptions=True)
                 self.logger.info(
                     f"🖼️⬆️ move 3 pictures to {self.S3Service.backend_bucket}")
-                Alert_body.snapshots.append(mask_key)
+                # Alert_body.snapshots.append(mask_key)
                 temp_urls = await asyncio.gather(*[self.S3Service.generate_url(key=url) for url in Alert_body.snapshots], return_exceptions=True)
                 # print(temp_urls)
                 Alert_body.temp_urls.extend(temp_urls)
