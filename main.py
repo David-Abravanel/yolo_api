@@ -264,7 +264,7 @@ import os
 import uvicorn
 import asyncio
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from contextlib import asynccontextmanager
 # from fastapi import FastAPI, HTTPException, Query
 
@@ -322,14 +322,19 @@ app = FastAPI(title="YOLO Detection Service", lifespan=lifespan)
 
 
 @app.get("/health")
-async def get_metric(request: Request):
+async def get_metric(request: Request, reset: Optional[bool] = Query("false")):
     metrics = metrics_tracker.calculate_metrics()
-    return {"data": metrics, "status": 'healthy'}
+    if reset:
+        await metrics_tracker.reset_metrics()
+    return {"data": metrics, "error_logs": metrics_tracker.get_errors(), "status": 'healthy'}
 
 
 @app.get("/clients")
-def get_client_metric(ip: Optional[str] = None):
-    return {"clients": metrics_tracker.get_client_data(client_ip=ip)}
+async def get_client_metric(ip: Optional[str] = None, reset: Optional[bool] = Query("false")):
+    clients = metrics_tracker.get_client_data(client_ip=ip)
+    if reset:
+        await metrics_tracker.reset_metrics(delete_params="Clients")
+    return {"clients": clients}
 
 
 if __name__ == "__main__":

@@ -129,6 +129,7 @@ class MetricsTracker:
     no_detection: int = 0
     no_detection_on_mask: int = 0
     expires: int = 0
+    logs: List[Dict] = field(default_factory=list)
     errors: dict = field(default_factory=lambda: {
         'get': 0, 'send': 0, 'delete': 0, 'general': 0
     })
@@ -145,7 +146,7 @@ class MetricsTracker:
         async with self._metrics_lock:
             self.clients_track[client_ip][client_channel] += 1
 
-    async def update(self, metric_type: str, value: int = 1):
+    async def update(self, metric_type: str, value: int = 1, err: Dict = {}):
         async with self._metrics_lock:
             if hasattr(self, metric_type):
                 current_value = getattr(self, metric_type)
@@ -156,6 +157,8 @@ class MetricsTracker:
                             current_value[key] += val
                         else:
                             current_value[key] = val
+                    if current_value.keys()[0] == "errors":
+                        self.logs.append(err)
                 else:
                     setattr(self, metric_type, current_value + value)
 
@@ -247,6 +250,9 @@ class MetricsTracker:
             '📉 error rate': calculate_rate(total_errors, total_send_attempts),
         }
 
+    def get_errors(self):
+        return self.logs
+
     def get_client_data(self, client_ip: Optional[str] = None):
         if client_ip:
             # Find the full key that contains the given IP
@@ -261,6 +267,27 @@ class MetricsTracker:
 
         # Returns all data with each client's cameras sorted by ID
         return {ip: dict(sorted(channels.items())) for ip, channels in self.clients_track.items()}
+
+    async def reset_metrics(self, delete_params: str = "All"):
+        async with self._metrics_lock:
+            if delete_params != "Clients":
+                if delete_params == "All":
+                    self.start_time = datetime.now()
+                    self.errors = {'get': 0, 'send': 0,
+                                   'delete': 0, 'general': 0}
+                self.receives = 0
+                self.sends = 0
+                self.Alert_in_action = 0
+                self.motion_mask_time.clear()
+                self.no_motion = 0
+                self.no_detection = 0
+                self.no_detection_on_mask = 0
+                self.expires = 0
+                self.clients_track.clear()
+                self.processing_times.clear()
+                self.camera_to_detection_times.clear()
+            else:
+                self.clients_track.clear()
 
 
 metrics_tracker = MetricsTracker()

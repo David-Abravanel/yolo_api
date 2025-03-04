@@ -61,7 +61,7 @@ class SQSService:
         except Exception as e:
             self.logger.error(
                 "Failed to receive Alerts from SQS", exc_info=True)
-            await metrics_tracker.update('errors', {'get': 1})
+            await metrics_tracker.update('errors', {'get': 1}, {"type": "get", "error": str(e)})
             return []
 
     async def send_Alert(self, detection_data: AlertsResponse) -> bool:
@@ -76,7 +76,7 @@ class SQSService:
             return True
         except Exception as e:
             self.logger.error("❌ Failed to send Alert to SQS", exc_info=True)
-            await metrics_tracker.update('errors', {'send': 1})
+            await metrics_tracker.update('errors', {'send': 1}, {"ip": detection_data.camera_data.ip, "port": detection_data.camera_data.channel_id, "type": "send", "error": str(e)})
             return False
 
     async def delete_Alert(self, receipt_handle: str) -> bool:
@@ -91,7 +91,7 @@ class SQSService:
         except Exception as e:
             self.logger.error(
                 "❌ Failed to delete Alert from SQS", exc_info=True)
-            await metrics_tracker.update('errors', {'delete': 1})
+            await metrics_tracker.update('errors', {'delete': 1}, {"type": "delete", "error": e})
             return False
 
     async def process_Alert(self, Alert: Dict):
@@ -178,7 +178,7 @@ class SQSService:
             await metrics_tracker.process_detection_time(Alert_body.event_time, start_time)
 
         except Exception as e:
-            await metrics_tracker.update('errors', {'general': 1})
+            await metrics_tracker.update('errors', {'general': 1}, {"ip": Alert_body.ip, "port": Alert_body.channel_id, "type": "general", "error": str(e)})
             self.logger.error(
                 f"❌ Error processing Alert: {Alert.get('MessageId', 'Unknown ID')}", exc_info=True)
             await self.delete_Alert(Alert['ReceiptHandle'])
