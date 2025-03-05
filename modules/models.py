@@ -154,7 +154,6 @@ class MetricsTracker:
             if hasattr(self, metric_type):
                 current_value = getattr(self, metric_type)
 
-                # עדכון מילון
                 if isinstance(current_value, dict) and isinstance(value, dict):
                     for key, val in value.items():
                         current_value[key] = current_value.get(key, 0) + val
