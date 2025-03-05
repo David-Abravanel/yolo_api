@@ -157,7 +157,7 @@ class MetricsTracker:
                             current_value[key] += val
                         else:
                             current_value[key] = val
-                    if current_value.keys()[0] == "errors":
+                    if "errors" in current_value:
                         self.logs.append(err)
                 else:
                     setattr(self, metric_type, current_value + value)
