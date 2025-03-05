@@ -2,7 +2,7 @@ from collections import defaultdict
 import json
 import asyncio
 import numpy as np
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Union
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pydantic import BaseModel, field_validator, model_validator
@@ -146,22 +146,23 @@ class MetricsTracker:
         async with self._metrics_lock:
             self.clients_track[client_ip][client_channel] += 1
 
-    async def update(self, metric_type: str, value: int = 1, err: Dict = {}):
+    async def update(self, metric_type: str, value: Union[int, Dict] = 1, err: Dict = None):
+        if err is None:
+            err = {}
+
         async with self._metrics_lock:
             if hasattr(self, metric_type):
                 current_value = getattr(self, metric_type)
 
-                if isinstance(current_value, dict):
+                # עדכון מילון
+                if isinstance(current_value, dict) and isinstance(value, dict):
                     for key, val in value.items():
-                        if key in current_value:
-                            current_value[key] += val
-                        else:
-                            current_value[key] = val
-                    if "errors" in current_value:
+                        current_value[key] = current_value.get(key, 0) + val
+
+                    if metric_type == "errors":
                         self.logs.append(err)
                 else:
                     setattr(self, metric_type, current_value + value)
-
     async def add_detect_motion_time(self, time: float):
         async with self._metrics_lock:
             self.motion_mask_time.append(time)
