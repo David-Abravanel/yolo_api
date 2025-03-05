@@ -96,6 +96,7 @@ class SQSService:
 
     async def process_Alert(self, Alert: Dict):
         start_time = datetime.now()
+        detection_happened = False
         try:
             try:
                 Alert_body = AlertsRequest(**json.loads(Alert['Body']))
@@ -108,12 +109,10 @@ class SQSService:
             await metrics_tracker.update_client(f"{Alert_body.nvr_name} - {Alert_body.ip}", Alert_body.channel_id)
             camera_data = Alert_body.camera_data
             frames = await asyncio.gather(*[self.S3Service.fetch_image(key=url) for url in Alert_body.snapshots], return_exceptions=True)
-
             if not all(isinstance(frame, np.ndarray) for frame in frames):
                 self.logger.warning(f"❌ Expired or invalid image URLs")
                 await self.delete_Alert(Alert['ReceiptHandle'])
                 await metrics_tracker.update('expires')
-                detection_happened = False
                 await metrics_tracker.add_processing_time((datetime.now() - start_time).total_seconds(), detection_happened)
                 return
 
@@ -131,7 +130,6 @@ class SQSService:
                     self.logger.info(f"🛑 No significant movement detected")
                     await self.delete_Alert(Alert['ReceiptHandle'])
                     await metrics_tracker.update('no_motion')
-                    detection_happened = False
                     await metrics_tracker.add_processing_time((datetime.now() - start_time).total_seconds(), detection_happened)
                     return
             # for frame in frames:
@@ -150,7 +148,6 @@ class SQSService:
             detections = [MaskService.get_detections_on_mask(
                 det, mask, frames[0].shape) for det in detection_result]
 
-            detection_happened = False
             if detections and any(detections):
                 # mask_key = f'{Alert_body.snapshots[0][:-6]}_3.jpg'
                 # await self.S3Service.upload_image(key=mask_key, image=color_mask, bucket=self.S3Service.backend_bucket, folder=self.S3Service.backend_snaps_folder)
@@ -175,9 +172,10 @@ class SQSService:
                     await metrics_tracker.update('no_detection')
 
             await self.delete_Alert(Alert['ReceiptHandle'])
-            await metrics_tracker.process_detection_time(Alert_body.event_time, start_time)
+            await metrics_tracker.process_detection_time(Alert_body.event_time, start_time, detection_happened)
 
         except Exception as e:
+            await metrics_tracker.process_detection_time(Alert_body.event_time, start_time, detection_happened)
             await metrics_tracker.update('errors', {'general': 1}, {"ip": Alert_body.ip, "port": Alert_body.channel_id, "type": "general", "error": str(e)})
             self.logger.error(
                 f"❌ Error processing Alert: {Alert.get('MessageId', 'Unknown ID')}", exc_info=True)
