@@ -162,6 +162,7 @@ class MetricsTracker:
                         self.logs.append(err)
                 else:
                     setattr(self, metric_type, current_value + value)
+
     async def add_detect_motion_time(self, time: float):
         async with self._metrics_lock:
             self.motion_mask_time.append(time)
@@ -267,6 +268,17 @@ class MetricsTracker:
 
         # Returns all data with each client's cameras sorted by ID
         return {ip: dict(sorted(channels.items())) for ip, channels in self.clients_track.items()}
+
+    def get_client_summary(self, ip: str = None):
+        if ip:
+            matched_key = next(
+                (key for key in self.clients_track if ip in key), None)
+            return len(self.clients_track[matched_key].items())
+
+        num_nvrs = len(self.clients_track)
+        num_cameras = sum(len(channels)
+                          for channels in self.clients_track.values())
+        return num_nvrs, num_cameras
 
     async def reset_metrics(self, delete_params: str = "All"):
         async with self._metrics_lock:

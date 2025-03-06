@@ -332,9 +332,13 @@ async def get_metric(request: Request, reset: Optional[bool] = Query("false")):
 @app.get("/clients")
 async def get_client_metric(ip: Optional[str] = None, reset: Optional[bool] = Query("false")):
     clients = metrics_tracker.get_client_data(client_ip=ip)
+    if ip:
+        num_c = metrics_tracker.get_client_summary(ip)
+        return {"num of cameras": num_c, "clients": clients}
+    num_n, num_c = metrics_tracker.get_client_summary()
     if reset:
         await metrics_tracker.reset_metrics(delete_params="Clients")
-    return {"clients": clients}
+    return {"number of nvrs": num_n, "number of cameras": num_c, "clients": clients}
 
 
 if __name__ == "__main__":
