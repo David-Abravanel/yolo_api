@@ -176,7 +176,7 @@ class SQSService:
 
         except Exception as e:
             await metrics_tracker.process_detection_time(Alert_body.event_time, start_time, detection_happened)
-            await metrics_tracker.update('errors', {'general': 1}, {"ip": Alert_body.ip, "port": Alert_body.channel_id, "type": "general", "error": str(e)})
+            await metrics_tracker.update('errors', {'general': 1}, {"ip": Alert_body.ip, "port": Alert_body.channel_id, "type": "general", "keys": Alert_body.snapshots, "error": str(e)})
             self.logger.error(
                 f"❌ Error processing Alert: {Alert.get('MessageId', 'Unknown ID')}", exc_info=True)
             await self.delete_Alert(Alert['ReceiptHandle'])
